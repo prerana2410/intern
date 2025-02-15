@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Weather App</title>
+    <script defer src="app.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            text-align: center;
+            background: linear-gradient(135deg, #6c63ff, #e3e4e5);
+            color: #333;
+        }
+        header {
+            background: #4b79a1;
+            color: white;
+            padding: 1.5rem 1rem;
+        }
+        header h1 {
+            margin: 0;
+        }
+        main {
+            padding: 2rem 1rem;
+        }
+        .weather {
+            margin-top: 2rem;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            padding: 2rem;
+            display: inline-block;
+            text-align: left;
+        }
+        input {
+            padding: 0.5rem;
+            font-size: 1rem;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        button {
+            padding: 0.5rem 1rem;
+            font-size: 1rem;
+            background: #4b79a1;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button:hover {
+            background: #355a71;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Weather App</h1>
+        <p>Get current weather information based on your location or input a city name.</p>
+    </header>
+    <main>
+        <div>
+            <input type="text" id="cityInput" placeholder="Enter city name">
+            <button onclick="fetchWeatherByCity()">Get Weather</button>
+        </div>
+        <div class="weather" id="weatherDisplay" style="display: none;">
+            <h2 id="location"></h2>
+            <p id="temperature"></p>
+            <p id="condition"></p>
+        </div>
+    </main>
+    <script>
+        const apiKey = 'fae2ccaa9023bf346a41d9dcf7ae4e2e'; // Replace with your actual API key
+
+        // Fetch weather by user-inputted city
+        function fetchWeatherByCity() {
+            const city = document.getElementById('cityInput').value;
+            if (!city) {
+                alert('Please enter a city name!');
+                return;
+            }
+            fetchWeather(`https://api.openweathermap.org/data/2.5/weather?q=${city}&units=metric&appid=${apiKey}`);
+        }
+
+        // Fetch weather using geolocation
+        function fetchWeatherByLocation() {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(position => {
+                    const { latitude, longitude } = position.coords;
+                    fetchWeather(`https://api.openweathermap.org/data/2.5/weather?lat=${latitude}&lon=${longitude}&units=metric&appid=${apiKey}`);
+                }, () => {
+                    alert('Unable to retrieve your location. Please enter a city name instead.');
+                });
+            } else {
+                alert('Geolocation is not supported by your browser. Please enter a city name instead.');
+            }
+        }
+
+        // Fetch weather data from the API
+        async function fetchWeather(url) {
+            try {
+                const response = await fetch(url);
+                if (!response.ok) throw new Error('City not found');
+                const data = await response.json();
+
+                // Update the weather display
+                document.getElementById('weatherDisplay').style.display = 'block';
+                document.getElementById('location').innerText = `Location: ${data.name}, ${data.sys.country}`;
+                document.getElementById('temperature').innerText = `Temperature: ${data.main.temp}°C`;
+                document.getElementById('condition').innerText = `Condition: ${data.weather[0].description}`;
+            } catch (error) {
+                alert(error.message);
+            }
+        }
+
+        // Fetch weather automatically based on user's location when the page loads
+        window.onload = fetchWeatherByLocation;
+    </script>
+</body>
+</html>
